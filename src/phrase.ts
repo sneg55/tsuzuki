@@ -9,11 +9,11 @@ export function template(b: Blocker): string {
     case 'cla_pending': return `${n} has not reported success; please complete the contributor agreement.`;
     case 'checks_failing': return `${n} ${b.artifacts.length === 1 ? 'is' : 'are'} failing${b.dates[0] ? ` since ${b.dates[0].slice(0, 10)}` : ''}; please check the reported results.`;
     case 'merge_conflict': return `Your branch conflicts with ${n}; please resolve the conflicts.`;
-    case 'changes_requested': return `@${n} requested changes on ${b.dates[0]?.slice(0, 10)}; no push has landed since that review.`;
+    case 'changes_requested': return `${n} requested changes on ${b.dates[0]?.slice(0, 10)}; no push has landed since that review.`;
   }
 }
 export function validateSentence(sentence: string, b: Blocker): boolean {
-  if (!sentence || [...sentence].length > 200 || /[\n\r<>]/.test(sentence) || forbidden.some(x => sentence.toLowerCase().includes(x))) return false;
+  if (!sentence || [...sentence].length > 200 || /[\n\r<>@]/.test(sentence) || forbidden.some(x => sentence.toLowerCase().includes(x))) return false;
   if (!b.artifacts.slice(0, 2).every(x => sentence.includes(x))) return false;
   if (b.artifacts.length > 2 && !sentence.includes(`and ${b.artifacts.length - 2} more`)) return false;
   let masked = sentence;

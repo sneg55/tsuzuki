@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { GitHub, allowedGitHubWrite } from '../src/github.js';
 import { Slack } from '../src/slack.js';
 import { Linear } from '../src/linear.js';
-import { anthropicModel } from '../src/phrase.js';
+import { anthropicModel, validateSentence } from '../src/phrase.js';
 import { emptyLedger, encodeLedger } from '../src/ledger.js';
 import { NOW, config, snapshot } from './helpers.js';
 import type { RequestEntry } from '../src/types.js';
@@ -48,6 +48,12 @@ test('Slack pause read occurs before lock writes and failing reads propagate', a
   });
   assert.equal((await slack.inspect(config, NOW)).paused, true); assert.deepEqual(paths, ['pins.list', 'reactions.get']); assert.equal(log.some(x => x.write), false);
 });
+test('a phrased sentence carrying an at-mention is rejected', () => {
+  const blocker = { kind: 'changes_requested', artifacts: ['sneg55'], dates: ['2026-09-13T00:00:00Z'] } as never;
+  assert.equal(validateSentence('sneg55 requested changes; no push has landed.', blocker), true);
+  assert.equal(validateSentence('@sneg55 requested changes; no push has landed.', blocker), false);
+});
+
 test('an absent read credential leaves thread reads on the bot token', async t => {
   const log: RequestEntry[] = []; const slack = new Slack('bot-token', 'BOT', log, false, undefined);
   t.mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
