@@ -2,7 +2,7 @@
 
 Tsuzuki nudges contributors only when a pull request has a named contributor blocker. It comments and manages two court labels in GitHub, mirrors nudges to Linear, and reads suppressions and posts a digest in Slack. The decision engine is pure TypeScript; the optional model only phrases a decision already made.
 
-The implementation follows [docs/SPEC.md](docs/SPEC.md). Live provider verification requires your fixture identities and credentials. `npm test` runs local regressions with recorded inputs and test doubles; those results are never presented as live integration evidence.
+Live provider verification requires your fixture identities and credentials. `npm test` runs local regressions with recorded inputs and test doubles; those results are never presented as live integration evidence.
 
 ## Run locally
 
@@ -33,7 +33,7 @@ Every invocation saves `run.json` and `requests.json` beneath `artifacts/run-…
 
 `--dry-run` reads the three providers, calculates decisions and Linear lookups, and prints the proposed digest. It does not create a ledger, take a remote lock, post a comment, alter labels, create a Linear issue, or post to Slack. It still requires read credentials. The process exits unsuccessfully for provider failures or partial writes, while preserving the recording.
 
-## Provider setup
+## External apps and provider setup
 
 | Identity | Access |
 |---|---|
@@ -61,7 +61,7 @@ The [Tsuzuki workflow](.github/workflows/tsuzuki.yml) is inactive until `TSUZUKI
 
 ## Live fixture and evaluation
 
-Use a dedicated **empty GitHub repository**, a dedicated Slack channel, and a Linear team accessible to the agent. The repository must have no prior issues or PRs, including deleted ones, because controls refer to PRs 1–10. The seed validates the returned PR numbers and refuses mismatches. The maintainer owns the repository; a distinct contributor account authors nine PRs. PR 5 is authored by the maintainer and exercises `skip_authors`.
+Use a dedicated **empty GitHub repository**, a dedicated Slack channel, and a Linear team accessible to the agent. The repository must have no prior issues or PRs, including deleted ones, because controls refer to PRs 1-10. The seed validates the returned PR numbers and refuses mismatches. The maintainer owns the repository; a distinct contributor account authors nine PRs. PR 5 is authored by the maintainer and exercises `skip_authors`.
 
 Provide the fixture-only entries in `.env`:
 
@@ -90,7 +90,9 @@ Reset force-restores only manifest-listed fixture branches, removes agent commen
 
 Fixture commit offsets are deliberately synthetic so the initial inputs exercise the nudge path while preserving the configured quiet-hours gate. They are fixture data, not inferred contributor locations. Reusing the fixture when its recorded offset places it inside that gate can fail positive assertions; the evaluator does not disable the gate to manufacture a pass.
 
-The runner executes all eight YAML controls, with five repeats by default. The five single-act controls share the first act of `rerun_is_noop`. The outcome and suppression controls get separate resets. Mutations use fixture identities and are outside each asserted agent act. Every act records full GitHub state, Slack messages, Linear mirrors, and the agent request log. Failures, unsafe state changes, and provider errors remain distinct. A crash cannot pass a silence control; every control also requires real comment, Linear, and Slack evidence.
+The runner executes all eight YAML controls, with one repeat by default. The five single-act controls share the first act of `rerun_is_noop`. The outcome and suppression controls get separate resets. Mutations use fixture identities and are outside each asserted agent act. Every act records full GitHub state, Slack messages, Linear mirrors, and the agent request log. Failures, unsafe state changes, and provider errors remain distinct. A crash cannot pass a silence control; every control also requires real comment, Linear, and Slack evidence.
+
+[docs/eval-brief.md](docs/eval-brief.md) and [docs/eval-results.json](docs/eval-results.json) are the recorded output of a live evaluation run against the fixture repository. All eight controls passed, with one repeat, per `eval.json`.
 
 Digest evidence must be a new root message from the configured Slack bot with a corresponding request in the agent log. The outcome control checks the digest's individual claims and totals against recorded outcomes. Completed acts remain independently assertable when a subsequent provider call fails; incomplete acts remain errors, and their agent recordings and request counts are retained. A replay failure cannot downgrade an unsafe verdict.
 
