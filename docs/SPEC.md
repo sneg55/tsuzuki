@@ -376,21 +376,26 @@ This is the part that makes the third app load-bearing rather than a notificatio
 
 ```
 Tsuzuki, sneg55/tsuzuki-fixture, run 2026-09-13T18:04Z
-Nudged 3
-  #4  checks_failing   ci / test (ubuntu), failing since 09-11
-  #7  merge_conflict   conflicts with main
-  #9  changes_requested  @sneg55 requested changes on 09-10, no push since
-Skipped 6
-  #1  maintainer_court   green, awaiting review
-  #2  maintainer_court   approved, not merged
-  #3  frequency_cap      last nudge 09-13, gap 14d
-  #5  skip_author        listed in skip_authors
-  #6  skipped_label      on-hold
-  #10 maintainer_court   changes requested, author pushed since
-Unsure 1
-  #8  checks_pending     required check queued 0h, never reported
-Outcome since last run
-  1 carrying a prior marker: stalled 1
+
+*Nudged 3*
+  #4  checks_failing  ci / test (ubuntu) is failing since 2026-09-11; please check the reported results.
+  #7  merge_conflict  Your branch conflicts with main; please resolve the conflicts.
+  #9  changes_requested  sneg55 requested changes on 2026-09-10; no push has landed since that review.
+
+*Skipped 6*
+  #1, #2, #10  maintainer_court
+  #3  frequency_cap  checks_failing: ci / contributor-check
+  #5  skip_author
+  #6  skipped_label
+
+*Unsure 1*
+  #8  checks_pending: ci / required-queue: queued, started 2026-09-13T18:02:00Z
+
+*Outcome since last run*
+  1 carrying a prior marker: cleared 0, pushed 0, pending 0, stalled 1
+  #3  stalled
+
+Template fallbacks: 3 | Ignored commands: 0
 Reply in thread with "skip #N", "skip @login", "unskip #N" or "unskip @login".
 React :no_entry_sign: on the pinned ledger to pause.
 ```
