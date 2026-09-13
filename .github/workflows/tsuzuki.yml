@@ -41,7 +41,7 @@ jobs:
       - name: Run agent
         env:
           GITHUB_TOKEN: ${{ steps.app.outputs.token }}
-          GITHUB_BOT_LOGIN: ${{ vars.GITHUB_BOT_LOGIN }}
+          GITHUB_BOT_LOGIN: ${{ vars.TSUZUKI_BOT_LOGIN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_READ_TOKEN: ${{ secrets.SLACK_READ_TOKEN }}
           SLACK_BOT_USER_ID: ${{ vars.SLACK_BOT_USER_ID }}
