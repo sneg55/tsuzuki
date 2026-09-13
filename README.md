@@ -13,6 +13,13 @@ Open pull requests go stale because nobody is sure whose move it is, and a bot t
 
 It comments once per blocker and manages two court labels in GitHub, mirrors each nudge to Linear, and posts a digest to Slack where maintainers can suppress or pause it from a thread. The decision engine is pure TypeScript; the optional model only phrases a decision already made, and it never closes, merges, or edits a pull request.
 
+## What is different
+
+- **Contributor-side, not maintainer-side.** It answers "whose move is it?" from evidence and nudges only the author who can act. Maintainer-court and unsure PRs get silence on GitHub and a line in the digest.
+- **The model cannot decide anything.** A pure TypeScript engine picks the blocker and the court; an optional model only phrases one validated sentence, with template fallback. Text inside a pull request is data, never an instruction.
+- **Maintainers steer from Slack.** `skip #7` in the digest thread is persisted to a pinned ledger before the bot reacts ✅, a malformed command gets ❓, and a 🚫 reaction on the ledger pauses every run.
+- **Every nudge is measured.** A hidden marker records the blocker and head commit, so the next run reports whether the contributor cleared it, pushed, or stalled.
+
 ![One scheduled run reads GitHub, Slack, and Linear, a pure TypeScript engine decides the court, and writes go only to pull requests with a contributor blocker.](media/pipeline.png)
 
 ## Demo
