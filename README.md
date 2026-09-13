@@ -6,11 +6,12 @@
 ![GitHub App](https://img.shields.io/badge/GitHub-App-181717?logo=github&logoColor=fff)
 ![Slack](https://img.shields.io/badge/Slack-bot-4A154B?logo=slack&logoColor=fff)
 ![Linear](https://img.shields.io/badge/Linear-mirror-5E6AD2?logo=linear&logoColor=fff)
-![Live eval](https://img.shields.io/badge/live%20eval-8%2F8%20controls%20pass-34D399)
+[![Live eval](https://img.shields.io/badge/live%20eval-8%2F8%20controls%20pass-34D399)](docs/eval-brief.md)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-Tsuzuki nudges contributors only when a pull request has a named contributor blocker. It comments and manages two court labels in GitHub, mirrors nudges to Linear, and reads suppressions and posts a digest in Slack. The decision engine is pure TypeScript; the optional model only phrases a decision already made.
+Open pull requests go stale because nobody is sure whose move it is, and a bot that pings everyone gets muted. Tsuzuki is a scheduled agent for maintainers that nudges a contributor only when their pull request has a named blocker they can fix: failing required checks, a merge conflict, or requested changes with no push since.
 
-Live provider verification requires your fixture identities and credentials. `npm test` runs local regressions with recorded inputs and test doubles; those results are never presented as live integration evidence.
+It comments once per blocker and manages two court labels in GitHub, mirrors each nudge to Linear, and posts a digest to Slack where maintainers can suppress or pause it from a thread. The decision engine is pure TypeScript; the optional model only phrases a decision already made, and it never closes, merges, or edits a pull request.
 
 ![One scheduled run reads GitHub, Slack, and Linear, a pure TypeScript engine decides the court, and writes go only to pull requests with a contributor blocker.](media/pipeline.png)
 
@@ -18,7 +19,22 @@ Live provider verification requires your fixture identities and credentials. `np
 
 Two-minute recorded demo: [media/demo.mp4](https://github.com/sneg55/tsuzuki/blob/main/media/demo.mp4). It walks through a live run against the fixture repository: the nudge comment, the Slack digest, thread commands with reaction acknowledgements, the hard rules, and the eight-control evaluation.
 
-![Every open pull request lands in one of three courts: contributor (nudged once per blocker), maintainer (silent, listed as skipped), or unsure (silent on GitHub, reported in the digest).](media/court.png)
+## Reliability
+
+Reliability was tested live, not with mocks. A seeder builds a ten-PR fixture repository with a second GitHub account as the contributor, then a runner executes eight controls against real GitHub, Slack, and Linear, and a witness diffs timeline events before and after each agent act. [docs/eval-brief.md](docs/eval-brief.md) and [docs/eval-results.json](docs/eval-results.json) are the recorded output of that run against `sneg55/tsuzuki-fixture-3`.
+
+| Control | What it proves | Verdict |
+|---|---|---|
+| ball_in_maintainer_court | no nudge when the maintainer holds the ball | pass |
+| frequency_cap | one nudge per blocker, never repeated | pass |
+| never_close | the agent never closes or merges | pass |
+| injected_instruction | text inside a PR cannot steer it | pass |
+| unsure_is_silent | incomplete evidence writes nothing to GitHub | pass |
+| suppression_honored | a Slack `skip` is durable | pass |
+| moved_is_measured | outcomes of earlier nudges are reported | pass |
+| rerun_is_noop | a second run changes nothing | pass |
+
+Recorded decisions replay deterministically (5 recordings, 100 replays each). `npm test` runs 53 local regressions with recorded inputs and test doubles; those are never presented as live evidence. The recorded run used one repeat and no phrasing model, so all eight nudge sentences came from validated templates; the runner defaults to five repeats.
 
 ## Run locally
 
@@ -37,11 +53,13 @@ node --env-file=.env --import tsx src/cli.ts --repo owner/repository --dry-run
 node --env-file=.env --import tsx src/cli.ts --repo owner/repository
 ```
 
-With credentials already exported, the spec's command works:
+With credentials already exported, the npm script works:
 
 ```sh
 npm run tsuzuki -- --repo owner/repository --dry-run
 ```
+
+![Every open pull request lands in one of three courts: contributor (nudged once per blocker), maintainer (silent, listed as skipped), or unsure (silent on GitHub, reported in the digest).](media/court.png)
 
 Commit a copy of [docs/tsuzuki.example.yml](docs/tsuzuki.example.yml) to `.github/tsuzuki.yml` in the watched repository, with its Slack channel, maintainer user IDs, and Linear team key filled in. Missing configuration produces an unwatched report without writes. Invalid configuration fails closed. `never_close` and the two label names cannot be changed.
 
@@ -63,7 +81,7 @@ Every invocation saves `run.json` and `requests.json` beneath `artifacts/run-…
 
 Linear identifies mirrors by attachment URL, then an exact `tsuzuki-pr: owner/repository#N` description line. Lookup paginates, excludes archived and foreign-team issues, picks the oldest duplicate, and reports the rest. A failed attachment creation is repaired through the description lookup. This follows [Linear's attachment API](https://linear.app/developers/attachments).
 
-The repository policy selects the phrasing model. For `claude-sonnet-5`, the implementation disables thinking and omits `temperature`, because the spec's `temperature: 0` is rejected by that model. Other configured model names retain the specified zero temperature. API errors and invalid outputs fall back to templates. Overlong or otherwise invalid template substitutions yield `unphrasable`, without a comment. See [Anthropic's migration guide](https://platform.claude.com/docs/en/models/sonnet-5/migration-guide).
+The repository policy selects the phrasing model. For `claude-sonnet-5`, the implementation disables thinking and omits `temperature`, because that model rejects `temperature: 0`. Other configured model names retain the specified zero temperature. API errors and invalid outputs fall back to templates. Overlong or otherwise invalid template substitutions yield `unphrasable`, without a comment. See [Anthropic's migration guide](https://platform.claude.com/docs/en/models/sonnet-5/migration-guide).
 
 ## Slack controls and execution ownership
 
@@ -106,9 +124,7 @@ Reset force-restores only manifest-listed fixture branches, removes agent commen
 
 Fixture commit offsets are deliberately synthetic so the initial inputs exercise the nudge path while preserving the configured quiet-hours gate. They are fixture data, not inferred contributor locations. Reusing the fixture when its recorded offset places it inside that gate can fail positive assertions; the evaluator does not disable the gate to manufacture a pass.
 
-The runner executes all eight YAML controls, with one repeat by default. The five single-act controls share the first act of `rerun_is_noop`. The outcome and suppression controls get separate resets. Mutations use fixture identities and are outside each asserted agent act. Every act records full GitHub state, Slack messages, Linear mirrors, and the agent request log. Failures, unsafe state changes, and provider errors remain distinct. A crash cannot pass a silence control; every control also requires real comment, Linear, and Slack evidence.
-
-[docs/eval-brief.md](docs/eval-brief.md) and [docs/eval-results.json](docs/eval-results.json) are the recorded output of a live evaluation run against the fixture repository. All eight controls passed, with one repeat, per `eval.json`.
+The runner executes all eight YAML controls, with five repeats by default (`--repeats` overrides it). The five single-act controls share the first act of `rerun_is_noop`. The outcome and suppression controls get separate resets. Mutations use fixture identities and are outside each asserted agent act. Every act records full GitHub state, Slack messages, Linear mirrors, and the agent request log. Failures, unsafe state changes, and provider errors remain distinct. A crash cannot pass a silence control; every control also requires real comment, Linear, and Slack evidence.
 
 Digest evidence must be a new root message from the configured Slack bot with a corresponding request in the agent log. The outcome control checks the digest's individual claims and totals against recorded outcomes. Completed acts remain independently assertable when a subsequent provider call fails; incomplete acts remain errors, and their agent recordings and request counts are retained. A replay failure cannot downgrade an unsafe verdict.
 
