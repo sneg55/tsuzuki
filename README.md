@@ -1,12 +1,24 @@
 # Tsuzuki
 
+[![Check](https://github.com/sneg55/tsuzuki/actions/workflows/check.yml/badge.svg)](https://github.com/sneg55/tsuzuki/actions/workflows/check.yml)
+![Node 22+](https://img.shields.io/badge/Node-22%2B-5FA04E?logo=nodedotjs&logoColor=fff)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)
+![GitHub App](https://img.shields.io/badge/GitHub-App-181717?logo=github&logoColor=fff)
+![Slack](https://img.shields.io/badge/Slack-bot-4A154B?logo=slack&logoColor=fff)
+![Linear](https://img.shields.io/badge/Linear-mirror-5E6AD2?logo=linear&logoColor=fff)
+![Live eval](https://img.shields.io/badge/live%20eval-8%2F8%20controls%20pass-34D399)
+
 Tsuzuki nudges contributors only when a pull request has a named contributor blocker. It comments and manages two court labels in GitHub, mirrors nudges to Linear, and reads suppressions and posts a digest in Slack. The decision engine is pure TypeScript; the optional model only phrases a decision already made.
 
 Live provider verification requires your fixture identities and credentials. `npm test` runs local regressions with recorded inputs and test doubles; those results are never presented as live integration evidence.
 
+![One scheduled run reads GitHub, Slack, and Linear, a pure TypeScript engine decides the court, and writes go only to pull requests with a contributor blocker.](media/pipeline.png)
+
 ## Demo
 
 Two-minute recorded demo: [media/demo.mp4](https://github.com/sneg55/tsuzuki/blob/main/media/demo.mp4). It walks through a live run against the fixture repository: the nudge comment, the Slack digest, thread commands with reaction acknowledgements, the hard rules, and the eight-control evaluation.
+
+![Every open pull request lands in one of three courts: contributor (nudged once per blocker), maintainer (silent, listed as skipped), or unsure (silent on GitHub, reported in the digest).](media/court.png)
 
 ## Run locally
 
