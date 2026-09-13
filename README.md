@@ -4,6 +4,10 @@ Tsuzuki nudges contributors only when a pull request has a named contributor blo
 
 Live provider verification requires your fixture identities and credentials. `npm test` runs local regressions with recorded inputs and test doubles; those results are never presented as live integration evidence.
 
+## Demo
+
+Two-minute recorded demo: [media/demo.mp4](https://github.com/sneg55/tsuzuki/blob/main/media/demo.mp4). It walks through a live run against the fixture repository: the nudge comment, the Slack digest, thread commands with reaction acknowledgements, the hard rules, and the eight-control evaluation.
+
 ## Run locally
 
 Use Node 22 or newer.
