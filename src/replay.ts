@@ -1,0 +1,13 @@
+import { readFile } from 'node:fs/promises';
+import { args } from './runtime.js';
+import { analyze } from './blocker.js';
+import { decide } from './policy.js';
+import type { RunResult } from './run.js';
+const options = args({ input: { type: 'string' } });
+if (!options.input) throw new Error('Expected --input artifacts/run-id/run.json');
+const recording = JSON.parse(await readFile(String(options.input), 'utf8')) as RunResult;
+if (!recording.config || !recording.ledger) throw new Error('Recording has no policy/ledger inputs to replay');
+const decisions = recording.snapshots.map(pr => ({ number: pr.number, decision: decide(pr, analyze(pr, recording.config!, recording.ledger!.repos[pr.repo] ?? { prs: [], logins: [] }, recording.now), recording.config!, recording.now) }));
+console.log('RECORDED REPLAY — no provider calls or writes');
+console.log(recording.digest);
+console.log(JSON.stringify({ recorded_status: recording.status, decisions }, null, 2));

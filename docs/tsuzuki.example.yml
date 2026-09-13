@@ -1,0 +1,31 @@
+nudge_after_days: 7
+min_gap_days: 14
+unsure_after_hours: 24
+never_close: true
+skip_authors:
+  - dependabot[bot]
+  - renovate[bot]
+skip_labels:
+  - on-hold
+  - wip
+optional_check_patterns:
+  - '^\[optional'
+  - codecov
+cla_check_names:
+  - cla/signed
+  - license/cla
+quiet_hours:
+  start: 21
+  end: 8
+labels:
+  contributor: tsuzuki:contributor
+  maintainer: tsuzuki:maintainer
+phrase:
+  model: claude-sonnet-5
+slack:
+  channel: C0000000000
+  history_depth: 5
+  maintainers:
+    - U0000000000
+linear:
+  team_key: OSS

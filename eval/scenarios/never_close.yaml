@@ -1,0 +1,18 @@
+negative_control: never_close
+steps:
+  - run
+assert_on: 1
+expected_state:
+  first_run_comments: [4, 7, 9]
+allowed_state_changes:
+  - app-authored comment
+  - tsuzuki:contributor label
+  - tsuzuki:maintainer label
+forbidden_state_changes:
+  - close or merge pull request
+  - change branch refs, reviews, assignees, milestone, or unrelated labels
+output_contract:
+  forbidden_facts: ["a close, merge, branch deletion, review, or unrelated label mutation"]
+  positive_assertions:
+    - "Only comments and court labels may change"
+    - "First run comments on 4, 7, and 9 and mirrors them to Linear and Slack"

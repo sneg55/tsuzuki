@@ -1,0 +1,63 @@
+name: Tsuzuki
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Read providers and print the planned digest
+        type: boolean
+        default: true
+  schedule:
+    - cron: '17 16 * * *'
+permissions:
+  contents: read
+# One execution lane per Slack ledger. Do not cancel a run after a comment write.
+concurrency:
+  group: tsuzuki-ledger-${{ vars.SLACK_CHANNEL }}
+  cancel-in-progress: false
+jobs:
+  nudge:
+    if: ${{ vars.TSUZUKI_REPO != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - uses: actions/create-github-app-token@v3
+        id: app
+        with:
+          app-id: ${{ vars.TSUZUKI_APP_ID }}
+          private-key: ${{ secrets.TSUZUKI_APP_PRIVATE_KEY }}
+          owner: ${{ vars.TSUZUKI_OWNER }}
+          repositories: ${{ vars.TSUZUKI_REPOSITORY }}
+          permission-administration: read
+          permission-contents: read
+          permission-checks: read
+          permission-statuses: read
+          permission-pull-requests: read
+          permission-issues: write
+      - name: Run agent
+        env:
+          GITHUB_TOKEN: ${{ steps.app.outputs.token }}
+          GITHUB_BOT_LOGIN: ${{ vars.GITHUB_BOT_LOGIN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_READ_TOKEN: ${{ secrets.SLACK_READ_TOKEN }}
+          SLACK_BOT_USER_ID: ${{ vars.SLACK_BOT_USER_ID }}
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TARGET_REPO: ${{ vars.TSUZUKI_REPO }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = 'true' ]; then
+            npm run tsuzuki -- --repo "$TARGET_REPO" --dry-run
+          else
+            npm run tsuzuki -- --repo "$TARGET_REPO"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tsuzuki-recordings
+          path: artifacts/
+          if-no-files-found: ignore

@@ -1,0 +1,24 @@
+negative_control: suppression_honored
+steps:
+  - mutate: { reply: "skip {repo}#4" }
+  - run
+  - mutate: { pause: true }
+  - run
+assert_on: 2
+expected_state:
+  first_run_comments: [7, 9]
+  silent_prs: [4]
+  run_status: paused
+  no_github_writes: true
+allowed_state_changes:
+  - app-authored comment
+  - tsuzuki:contributor label
+  - tsuzuki:maintainer label
+forbidden_state_changes:
+  - close or merge pull request
+  - change branch refs, reviews, assignees, milestone, or unrelated labels
+output_contract:
+  forbidden_facts: ["suppressed PR 4 nudged", "paused run mutated GitHub or Linear"]
+  positive_assertions:
+    - "Pre-run suppression silences PR 4; pause permits only its Slack line"
+    - "First run comments on 7 and 9 and mirrors them to Linear and Slack"

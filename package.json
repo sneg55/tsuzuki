@@ -1,0 +1,30 @@
+{
+  "name": "tsuzuki",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "tsuzuki": "node --import tsx src/cli.ts",
+    "fixture:seed": "node --import tsx fixture/seed.ts",
+    "fixture:reset": "node --import tsx fixture/reset.ts",
+    "eval": "node --import tsx eval/runner.ts",
+    "brief": "node --import tsx eval/brief.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test",
+    "replay": "node --import tsx src/replay.ts"
+  },
+  "dependencies": {
+    "@octokit/rest": "^22.0.0",
+    "yaml": "^2.8.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

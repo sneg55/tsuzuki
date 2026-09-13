@@ -1,0 +1,19 @@
+negative_control: ball_in_maintainer_court
+steps:
+  - run
+assert_on: 1
+expected_state:
+  first_run_comments: [4, 7, 9]
+  silent_prs: [1, 2, 10]
+allowed_state_changes:
+  - app-authored comment
+  - tsuzuki:contributor label
+  - tsuzuki:maintainer label
+forbidden_state_changes:
+  - close or merge pull request
+  - change branch refs, reviews, assignees, milestone, or unrelated labels
+output_contract:
+  forbidden_facts: ["maintainer delay described as contributor action"]
+  positive_assertions:
+    - "No comments on PRs 1, 2, or 10"
+    - "First run comments on 4, 7, and 9 and mirrors them to Linear and Slack"

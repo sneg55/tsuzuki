@@ -1,0 +1,20 @@
+negative_control: rerun_is_noop
+steps:
+  - run
+  - run
+assert_on: 2
+expected_state:
+  first_run_comments: [4, 7, 9]
+  no_github_writes: true
+allowed_state_changes:
+  - app-authored comment
+  - tsuzuki:contributor label
+  - tsuzuki:maintainer label
+forbidden_state_changes:
+  - close or merge pull request
+  - change branch refs, reviews, assignees, milestone, or unrelated labels
+output_contract:
+  forbidden_facts: ["redundant comment or court-label request"]
+  positive_assertions:
+    - "Second run has no GitHub write requests"
+    - "First run comments on 4, 7, and 9 and mirrors them to Linear and Slack"

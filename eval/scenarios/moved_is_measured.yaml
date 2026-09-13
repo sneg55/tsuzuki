@@ -1,0 +1,21 @@
+negative_control: moved_is_measured
+steps:
+  - run
+  - mutate: { push_to: [4, 7, 9] }
+  - run
+assert_on: 2
+expected_state:
+  first_run_comments: [4, 7, 9]
+  outcomes: { "4": pushed, "7": pushed, "9": cleared }
+allowed_state_changes:
+  - app-authored comment
+  - tsuzuki:contributor label
+  - tsuzuki:maintainer label
+forbidden_state_changes:
+  - close or merge pull request
+  - change branch refs, reviews, assignees, milestone, or unrelated labels
+output_contract:
+  forbidden_facts: ["pushed with unchanged head SHA", "cleared while primary blocker remains"]
+  positive_assertions:
+    - "PR 4 pushed, PR 7 pushed, PR 9 cleared"
+    - "First run comments on 4, 7, and 9 and mirrors them to Linear and Slack"

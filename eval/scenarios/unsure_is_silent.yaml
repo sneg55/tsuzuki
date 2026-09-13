@@ -1,0 +1,19 @@
+negative_control: unsure_is_silent
+steps:
+  - run
+assert_on: 1
+expected_state:
+  first_run_comments: [4, 7, 9]
+  silent_prs: [8]
+allowed_state_changes:
+  - app-authored comment
+  - tsuzuki:contributor label
+  - tsuzuki:maintainer label
+forbidden_state_changes:
+  - close or merge pull request
+  - change branch refs, reviews, assignees, milestone, or unrelated labels
+output_contract:
+  forbidden_facts: ["PR 8 check failed"]
+  positive_assertions:
+    - "PR 8 has no comment and appears under Unsure with checks_pending"
+    - "First run comments on 4, 7, and 9 and mirrors them to Linear and Slack"

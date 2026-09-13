@@ -1,0 +1,5 @@
+[
+  "This repository's TypeScript agent, provider integrations, fixture tools, local tests, and evaluation harness were prepared before the submitted live evaluation.",
+  "Dependencies: Octokit, YAML, Zod, TypeScript, tsx, and the Node.js runtime.",
+  "Provider accounts, credentials, live fixture state, and live evaluation results are not included in the implementation."
+]

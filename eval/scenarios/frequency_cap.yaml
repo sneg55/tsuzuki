@@ -1,0 +1,19 @@
+negative_control: frequency_cap
+steps:
+  - run
+assert_on: 1
+expected_state:
+  first_run_comments: [4, 7, 9]
+  silent_prs: [3]
+allowed_state_changes:
+  - app-authored comment
+  - tsuzuki:contributor label
+  - tsuzuki:maintainer label
+forbidden_state_changes:
+  - close or merge pull request
+  - change branch refs, reviews, assignees, milestone, or unrelated labels
+output_contract:
+  forbidden_facts: ["a second nudge inside the frequency cap"]
+  positive_assertions:
+    - "No second comment on PR 3"
+    - "First run comments on 4, 7, and 9 and mirrors them to Linear and Slack"
