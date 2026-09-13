@@ -37,7 +37,7 @@ Every invocation saves `run.json` and `requests.json` beneath `artifacts/run-…
 
 | Identity | Access |
 |---|---|
-| GitHub agent App | Repository contents, pull requests, checks, commit statuses, administration: read; issues: write; metadata: read |
+| GitHub agent App | Repository contents, checks, commit statuses, administration: read; issues and pull requests: write; metadata: read |
 | Slack agent bot | `chat:write`, `pins:read`, `pins:write`, `reactions:read`, `channels:history` and/or `groups:history`; invite it to the channel |
 | Optional Slack reader | Conversation history scopes for thread reads; no write scopes; supply as `SLACK_READ_TOKEN` |
 | Linear agent | API key or OAuth authorization with access to read the configured team and create/update issues and attachments |

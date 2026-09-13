@@ -36,7 +36,7 @@ jobs:
           permission-contents: read
           permission-checks: read
           permission-statuses: read
-          permission-pull-requests: read
+          permission-pull-requests: write
           permission-issues: write
       - name: Run agent
         env:
