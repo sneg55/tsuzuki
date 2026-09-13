@@ -11,7 +11,7 @@ export function clients(dryRun = false) {
   return {
     log,
     github: new GitHub(env('GITHUB_TOKEN'), env('GITHUB_BOT_LOGIN'), log, dryRun),
-    slack: new Slack(env('SLACK_BOT_TOKEN'), env('SLACK_BOT_USER_ID'), log, dryRun, process.env.SLACK_READ_TOKEN),
+    slack: new Slack(env('SLACK_BOT_TOKEN'), env('SLACK_BOT_USER_ID'), log, dryRun, process.env.SLACK_READ_TOKEN || undefined),
     linear: new Linear(env('LINEAR_API_KEY'), log, dryRun),
     ...(process.env.ANTHROPIC_API_KEY ? { createModel: (model: string) => anthropicModel(process.env.ANTHROPIC_API_KEY!, model, log) } : {}),
   };

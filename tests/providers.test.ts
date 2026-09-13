@@ -48,6 +48,15 @@ test('Slack pause read occurs before lock writes and failing reads propagate', a
   });
   assert.equal((await slack.inspect(config, NOW)).paused, true); assert.deepEqual(paths, ['pins.list', 'reactions.get']); assert.equal(log.some(x => x.write), false);
 });
+test('an absent read credential leaves thread reads on the bot token', async t => {
+  const log: RequestEntry[] = []; const slack = new Slack('bot-token', 'BOT', log, false, undefined);
+  t.mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
+    assert.equal((init?.headers as Record<string, string>).authorization, 'Bearer bot-token');
+    return json({ ok: true, messages: [] });
+  });
+  await slack.messages('conversations.replies', { channel: 'C', ts: '1.0' });
+});
+
 test('Slack commands paginate replies and use a separate read credential only for thread reads', async t => {
   const log: RequestEntry[] = []; const slack = new Slack('bot-token', 'BOT', log, false, 'read-token'); let calls = 0;
   t.mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
