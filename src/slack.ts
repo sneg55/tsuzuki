@@ -3,7 +3,7 @@ import type { Config } from './config.js';
 import type { Ledger, RequestEntry } from './types.js';
 const reads = new Set(['auth.test', 'pins.list', 'reactions.get', 'conversations.history', 'conversations.replies']);
 export type SlackMessage = { ts: string; user?: string; text?: string; thread_ts?: string; reply_count?: number; reactions?: { name: string; users: string[]; count: number }[] };
-export type LedgerRead = { ledger: Ledger; ts: string | null; paused: boolean; busy: boolean; ignored: number };
+export type LedgerRead = { ledger: Ledger; ts: string | null; paused: boolean; busy: boolean; ignored: number; applied?: string[]; malformed?: string[] };
 export class Slack {
   constructor(readonly token: string, readonly bot: string, readonly log: RequestEntry[], readonly dryRun = false, readonly readToken?: string) {}
   async call<T = any>(method: string, args: Record<string, unknown> = {}, token?: string): Promise<T> {
@@ -61,7 +61,7 @@ export class Slack {
       replies.push(...thread.filter(x => x.ts !== digest.ts).map(x => ({ ...x, repo })));
     }
     const merged = applyCommands(read.ledger, replies, config.slack.maintainers, this.bot, now);
-    return { ...read, ledger: merged.ledger, ignored: merged.ignored };
+    return { ...read, ledger: merged.ledger, ignored: merged.ignored, applied: merged.applied, malformed: merged.malformed };
   }
   async acquire(read: LedgerRead, config: Config, holder: string, now: string): Promise<LedgerRead> {
     if (read.paused || read.busy) throw new Error('Cannot lock a paused or busy ledger');
@@ -93,6 +93,13 @@ export class Slack {
     const ledger = decodeLedger(message.text);
     if (ledger.lock?.holder !== holder) throw new Error('Run lock owner changed');
     await this.save(config.slack.channel, read.ts, { ...ledger, lock: null, updated: new Date().toISOString() });
+  }
+  async acknowledge(channel: string, applied: string[], malformed: string[]): Promise<void> {
+    const marks = [...applied.map(ts => [ts, 'white_check_mark'] as const), ...malformed.map(ts => [ts, 'question'] as const)];
+    for (const [timestamp, name] of marks) {
+      try { await this.call('reactions.add', { channel, timestamp, name }); }
+      catch (error) { if (!(error instanceof Error && error.message.endsWith('already_reacted'))) throw error; }
+    }
   }
   async post(channel: string, text: string): Promise<void> {
     await this.call('chat.postMessage', { channel, text, mrkdwn: false, unfurl_links: false, unfurl_media: false });

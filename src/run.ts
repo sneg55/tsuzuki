@@ -40,6 +40,10 @@ export async function run(repo: string, deps: Dependencies, options: { dryRun?: 
     locked = await slack.acquire(read, config, id, now);
     const commands = await slack.commands(locked, config, now);
     if (!dryRun && commands.ts && JSON.stringify(commands.ledger) !== JSON.stringify(locked.ledger)) await slack.save(config.slack.channel, commands.ts, commands.ledger);
+    if (!dryRun && commands.ts) {
+      try { await slack.acknowledge(config.slack.channel, commands.applied ?? [], commands.malformed ?? []); }
+      catch { result.errors.push('Slack command acknowledgement failed'); }
+    }
     locked = commands; result.ledger = structuredClone(commands.ledger);
     if (!dryRun) await github.ensureLabels(repo, labels);
     for (const pr of result.snapshots) {

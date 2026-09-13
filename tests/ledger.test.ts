@@ -16,12 +16,14 @@ test('commands merge in global timestamp order, authorize humans, and skip self-
     { ts: '10.000005', user: 'UADMIN', text: 'skip @Alice', repo: 'owner/repo' },
   ], ['UADMIN'], 'BOT', NOW);
   assert.deepEqual(result.ledger.repos['owner/repo'], { prs: [], logins: ['alice'] }); assert.equal(result.ignored, 1); assert.equal(result.ledger.cursor, '10.000005');
+  assert.deepEqual(result.applied, ['10.000001', '10.000002', '10.000005']); assert.deepEqual(result.malformed, []);
   const replay = applyCommands(result.ledger, [{ ts: '10.000001', user: 'UADMIN', text: 'skip owner/repo#7' }], ['UADMIN'], 'BOT', NOW);
   assert.equal(replay.changed, false);
 });
 test('ledger thread commands require a repository; digest commands remain scoped', () => {
   const result = applyCommands(emptyLedger(NOW), [{ ts: '1.1', user: 'UADMIN', text: 'skip #7' }, { ts: '1.2', user: 'UADMIN', text: 'skip #7', repo: 'other/repo' }], ['UADMIN'], 'BOT', NOW);
   assert.equal(result.ignored, 1); assert.deepEqual(result.ledger.repos, { 'other/repo': { prs: [7], logins: [] } });
+  assert.deepEqual(result.malformed, ['1.1']); assert.deepEqual(result.applied, ['1.2']);
 });
 test('Slack timestamp comparison retains fractional precision', () => {
   assert.equal(compareTs('1757800000.000100', '1757800000.000101'), -1);

@@ -38,7 +38,7 @@ Every invocation saves `run.json` and `requests.json` beneath `artifacts/run-…
 | Identity | Access |
 |---|---|
 | GitHub agent App | Repository contents, checks, commit statuses, administration: read; issues and pull requests: write; metadata: read |
-| Slack agent bot | `chat:write`, `pins:read`, `pins:write`, `reactions:read`, `channels:history` and/or `groups:history`; invite it to the channel |
+| Slack agent bot | `chat:write`, `pins:read`, `pins:write`, `reactions:read`, `reactions:write`, `channels:history` and/or `groups:history`; invite it to the channel |
 | Optional Slack reader | Conversation history scopes for thread reads; no write scopes; supply as `SLACK_READ_TOKEN` |
 | Linear agent | API key or OAuth authorization with access to read the configured team and create/update issues and attachments |
 | Optional Anthropic client | `ANTHROPIC_API_KEY`; omission selects validated templates |
@@ -51,7 +51,7 @@ The repository policy selects the phrasing model. For `claude-sonnet-5`, the imp
 
 ## Slack controls and execution ownership
 
-The bot discovers its pinned suppression ledger by ownership and protocol header. A malformed ledger, ambiguous ledger pins, or a failed pause read aborts the run. On a digest thread, maintainers can post `skip #7`, `skip @login`, and their `unskip` equivalents. On the ledger thread, use `skip owner/repository#7` or `skip owner/repository@login`. Commands are repository-scoped, ordered by Slack timestamp, and applied only beyond the saved cursor. Replies in digest threads outside `history_depth` are outside the inbox; already applied suppressions remain durable.
+The bot discovers its pinned suppression ledger by ownership and protocol header. A malformed ledger, ambiguous ledger pins, or a failed pause read aborts the run. On a digest thread, maintainers can post `skip #7`, `skip @login`, and their `unskip` equivalents. On the ledger thread, use `skip owner/repository#7` or `skip owner/repository@login`. Commands are repository-scoped, ordered by Slack timestamp, and applied only beyond the saved cursor. Replies in digest threads outside `history_depth` are outside the inbox; already applied suppressions remain durable. After the ledger is written, the bot reacts :white_check_mark: on each command it applied and :question: on a maintainer's reply that began with `skip` or `unskip` but could not be parsed; replies from anyone else get no reaction.
 
 React with `no_entry_sign` on the pinned ledger to pause. A paused run posts exactly its paused line. Removing the reaction resumes it.
 
